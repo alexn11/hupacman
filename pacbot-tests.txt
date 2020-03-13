@@ -1,5 +1,8 @@
 (replace firefox with pacman and firefo with pacma, have linux, tree, pacman, tar, do a pacman -Syu beforeend)
 
+./pacbot show-journal-last-lines 20
+(...)
+
 ./pacbot 
 Options: --help (-h), --save-root-space (-s), --show-pacman-config
 Actions:
@@ -86,11 +89,11 @@ Net Upgrade Size:*
 (answer n RET)
 
 ./pacbot list-cached-versions firefox tar linux
-/var/cache/pacman/pkg/tar-1.32-3-x86_64.pkg.tar.xz
-/var/cache/pacman/pkg/firefox-73.0.1-1-x86_64.pkg.tar.zst
-/var/cache/pacman/pkg/linux-5.5.7.arch1-1-x86_64.pkg.tar.zst
-/var/cache/pacman/pkg/linux-5.5.8.arch1-1-x86_64.pkg.tar.zst
-/var/cache/pacman/pkg/firefox-74.0-2-x86_64.pkg.tar.zst
+/var/cache/pacman/pkg/tar-*.pkg.tar.xz
+/var/cache/pacman/pkg/firefox-*.pkg.tar.zst
+/var/cache/pacman/pkg/linux-*.pkg.tar.zst
+/var/cache/pacman/pkg/linux-*.pkg.tar.zst
+/var/cache/pacman/pkg/firefox-*.pkg.tar.zst
 
 ./pacbot list-explicitely-installed-packages
 (...)
@@ -110,23 +113,23 @@ Net Upgrade Size:*
 
 ./pacbot show-info pacman
 Name            : pacman
-Version         : 5.2.1-4
+Version         : *
 Description     : A library-based package manager with dependency support
-Architecture    : x86_64
+Architecture    : *
 URL             : https://www.archlinux.org/pacman/
 Licenses        : GPL
 Groups          : base-devel
-Provides        : libalpm.so=12-64
+Provides        : libalpm.so=*
 Depends On      : bash  glibc  libarchive  curl  gpgme  pacman-mirrorlist  archlinux-keyring
 Optional Deps   : perl-locale-gettext: translation support in makepkg-template
 Required By     : appstream-glib  pacman-contrib
 Optional For    : None
 Conflicts With  : None
 Replaces        : None
-Installed Size  : 4,41 MiB
+Installed Size  : *
 Packager        : Levente Polyak <anthraxx@archlinux.org>
-Build Date      : ven. 10 janv. 2020 02:24:37
-Install Date    : ven. 10 janv. 2020 09:35:29
+Build Date      : *
+Install Date    : *
 Install Reason  : Explicitly installed
 Install Script  : No
 Validated By    : Signature
@@ -143,29 +146,29 @@ pacman *
 ./pacbot show-what-depends-on pacman
 (note:) The information is somewhere below...
 Name            : pacman
-Version         : 5.2.1-4
+Version         : *
 Description     : A library-based package manager with dependency support
-Architecture    : x86_64
+Architecture    : *
 URL             : https://www.archlinux.org/pacman/
 Licenses        : GPL
 Groups          : base-devel
-Provides        : libalpm.so=12-64
+Provides        : libalpm.so=*
 Depends On      : bash  glibc  libarchive  curl  gpgme  pacman-mirrorlist  archlinux-keyring
 Optional Deps   : perl-locale-gettext: translation support in makepkg-template
 Required By     : appstream-glib  pacman-contrib
 Optional For    : None
 Conflicts With  : None
 Replaces        : None
-Installed Size  : 4,41 MiB
+Installed Size  : *
 Packager        : Levente Polyak <anthraxx@archlinux.org>
-Build Date      : ven. 10 janv. 2020 02:24:37
-Install Date    : ven. 10 janv. 2020 09:35:29
+Build Date      : *
+Install Date    : *
 Install Reason  : Explicitly installed
 Install Script  : No
 Validated By    : Signature
 
 ./pacbot show-which-package-provides /bin/pacman
-/usr/bin/pacman is owned by pacman 5.2.1-4
+/usr/bin/pacman is owned by pacman *
 
 
 DON'T SUDO ./pacbot uninstall pacman

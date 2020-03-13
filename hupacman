@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# TODO: reintroduce alternative names
+# TODO: proper testing
+# TODO: test: alternative names
+
 # imports
 
 import os
@@ -87,20 +91,11 @@ def create_command_line_show_installed_version (params) :
   command_line . append ("-Q")
   command_line += params ["package_name"]
   return command_line
-  
-def create_command_line_show_last_upgrade (params) :
-  # TODO: dhis iz alzou kamplikeitid
-  raise Exception ("Später...")
-  command_line = []
-  return command_line
 
-def create_command_line_show_previous_upgrade (params) :
-  if (len (params ["upgrade_age_rank"]) != 1):
+def create_command_line_show_journal_last_lines (params) :
+  if (len (params ["nb_lines"]) != 1):
     complain_about_more_than_one_package_and_exit ()
-  # TODO: dhis iz alzou kamplikeitid
-  raise Exception ("Später...")
-  command_line = []
-  return command_line
+  return [ "tail", "-n", params ["nb_lines"] [0], pacman_journal_path ]
 
 def create_command_line_show_which_package_provides (params) :
   command_line = prepare_pacman_invocation ()
@@ -138,30 +133,45 @@ def create_command_line_show_what_depend_on (params) :
   print ("(note:) The information is somewhere below...")
   return command_line
 
+def create_command_line_show_last_upgrade (params) :
+  # TODO: dhis iz alzou kamplikeitid
+  raise Exception ("Später...")
+  command_line = []
+  return command_line
+
+def create_command_line_show_previous_upgrade (params) :
+  if (len (params ["upgrade_age_rank"]) != 1):
+    complain_about_more_than_one_package_and_exit ()
+  # TODO: dhis iz alzou kamplikeitid
+  raise Exception ("Später...")
+  command_line = []
+  return command_line
+
+
 
 
 actions = {
-  # isenshlz
+  "check-if-installed" : [ "package_name", create_command_line_check_if_installed ],
+  "clean-cache" : [ "nb_versions_to_keep", create_command_line_clean_cache ],
+  "downgrade" : [ "package_name", create_command_line_downgrade ],
+  "find-installed-package" : [ "package_regexp", create_command_line_find_installed_package ],
   "install" : [ "package_name", create_command_line_install ],
-  "install-file" : [ "file_path", create_command_line_install_file ],
   "install-aur" : [ "package_name", create_command_line_install_aur ],
+  "install-file" : [ "file_path", create_command_line_install_file ],
+  "list-cached-versions" : [ "package_name", create_command_line_list_cached_versions ],
+  "list-explicitely-installed-packages" : [ "", create_command_line_list_explicitely_installed_packages ],
+  "list-installed-packages" : [ "", create_command_line_list_installed_packages ],
+  "list-installed-package-versions" : [ "", create_command_line_list_installed_package_versions ],
+  "list-outofdate-packages" : [ "", create_command_line_list_outofdate_packages ],
+  "show-info" : [ "package_name", create_command_line_show_info ],
+  "show-installed-version" : [ "package_name", create_command_line_show_installed_version ],
+  "show-journal-last-lines" : [ "nb_lines", create_command_line_show_journal_last_lines ],
+  #"show-last-upgrade" : [ "", create_command_line_show_last_upgrade ],  # todo:
+  #"show-previous-upgrade" : [ "upgrade_age_rank", create_command_line_show_previous_upgrade ], # todo:
+  "show-which-package-provides" : [ "file_path", create_command_line_show_which_package_provides ],
   "uninstall" : [ "package_name", create_command_line_uninstall ],
   "uninstall-and-remove-conf" : [ "package_name", create_command_line_uninstall_and_remove_conf ],
   "upgrade-system" : [ "", create_command_line_upgrade_system ],
-  "clean-cache" : [ "nb_versions_to_keep", create_command_line_clean_cache ],
-  "downgrade" : [ "package_name", create_command_line_downgrade ],
-  "show-last-upgrade" : [ "", create_command_line_show_last_upgrade ],
-  "show-previous-upgrade" : [ "upgrade_age_rank", create_command_line_show_previous_upgrade ],
-  "list-cached-versions" : [ "package_name", create_command_line_list_cached_versions ],
-  "show-installed-version" : [ "package_name", create_command_line_show_installed_version ],
-  "show-info" : [ "package_name", create_command_line_show_info ],
-  "show-which-package-provides" : [ "file_path", create_command_line_show_which_package_provides ],
-  "list-installed-package-versions" : [ "", create_command_line_list_installed_package_versions ],
-  "list-installed-packages" : [ "", create_command_line_list_installed_packages ],
-  "find-installed-package" : [ "package_regexp", create_command_line_find_installed_package ],
-  "list-outofdate-packages" : [ "", create_command_line_list_outofdate_packages ],
-  "check-if-installed" : [ "package_name", create_command_line_check_if_installed ],
-  "list-explicitely-installed-packages" : [ "", create_command_line_list_explicitely_installed_packages ],
    # to be modified:
   "show-dependencies" : [ "package_name", create_command_line_show_dependencies ],
   "show-what-depends-on" : [ "package_name", create_command_line_show_what_depend_on ],
@@ -169,15 +179,27 @@ actions = {
 }
 
 
-
+alternative_name_dict = {
+  "show-tail-of-log" : "show-journal-last-lines",
+  "remove" : "uninstall",
+  "clear-cache" : "clear-cache",
+}
 
 
 action_options = { k : v [0] for k, v in actions . items () }
 
 # funs
 
+def convert_alternative_name (action) :
+  translated = action
+  try :
+    translated = alternative_name_dict [action]
+  except (KeyError) :
+    pass
+  return translated
+
 def print_help_and_exit ():
-  print ("Options: --help (-h), --save-root-space (-s), --show-pacman-config")
+  print ("Options: --help (-h)")
   print ("Actions:")
   for action, parameter_type in sorted (action_options . items ()):
     help_text = "  " + action
@@ -198,7 +220,7 @@ def complain_about_more_than_one_package_and_exit ():
 def is_option (arg):
   return (arg [0] == '-')
 
-def is_valid_option_then_set_option (option):
+def OLD_is_valid_option_then_set_option (option):
   is_valid = True
   if ((option == "-h") or (option == "--help")):
     print_help_and_exit ()
@@ -210,6 +232,10 @@ def is_valid_option_then_set_option (option):
     is_valid = False
   return is_valid
 
+def is_valid_option_then_set_option (option):
+  if ((option == "-h") or (option == "--help")):
+    print_help_and_exit ()
+  return False
 
 
 def does_action_exist (action):
@@ -224,27 +250,18 @@ def prepare_pacman_invocation (option = None):
     command_line_head . append ("-v")
   if (do_use_alternate_cache):
     command_line_head += ["--cachedir", pacman_alternate_cache]
-    # NOTE: no need to put quotes, subprocess . call's work
   if (option is not None) :
     command_line_head += [ option ]
   return command_line_head
   
 
 def apply_action (action, parameter_list):
-
   parameter_type = action_options [action]
   params = {}
-  params [parameter_type] = parameter_list
-
-  
+  params [parameter_type] = parameter_list 
   command_line = actions [action] [1] (params)
-  
-
-
-
   # TODO: use check_call ?
-  subprocess . call (command_line)
-  
+  subprocess . call (command_line)  
   return
 
 
@@ -254,7 +271,7 @@ def apply_action (action, parameter_list):
 
 # main
 
- # NOTE: be carefull with show pacman config (somtm impossible)
+
 
 # default options
 do_show_pacman_config = False
@@ -281,7 +298,8 @@ while (arg_idx < argv_len):
         
     else:
       
-      action = arg
+      action = convert_alternative_name (arg)
+      
       
       if (not does_action_exist (action)):
         print (" Unknown action: " + action)
