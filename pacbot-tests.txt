@@ -93,7 +93,11 @@ Net Upgrade Size:*
 /var/cache/pacman/pkg/firefox-*.pkg.tar.zst
 /var/cache/pacman/pkg/linux-*.pkg.tar.zst
 /var/cache/pacman/pkg/linux-*.pkg.tar.zst
+<<<<<<< HEAD
 /var/cache/pacman/pkg/firefox-*.pkg.tar.zst
+=======
+/var/cache/pacman/pkg/firefox-*.tar.zst
+>>>>>>> 6b02c3027bd6f79b707780cb55c837e3d04ef3b3
 
 ./pacbot list-explicitely-installed-packages
 (...)

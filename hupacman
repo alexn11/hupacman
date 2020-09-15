@@ -26,19 +26,12 @@ def create_command_line_ (params) :
 
 
 
-def create_command_line_clean_cache (params) :
+def create_command_line_cleanup_cache (params) :
   if (len (params ["nb_versions_to_keep"]) != 1):
     complain_about_more_than_one_package_and_exit ()
   command_line = [ "paccache", "-r", "-k", params ["nb_versions_to_keep"] [0] ]
   #subprocess . check_call (command_line)
   #command_line = ["paccache", "-ruk0"]
-  return command_line
-  
-def create_command_line_downgrade (params) :
-  # TODO: for each package, list cached versions, get the one preceding the last (how?) then invoke pacman -U
-  raise Exception ("Es wird später implementet")
-  package_names = []
-  command_line = prepare_pacman_invocation ()
   return command_line
   
 def create_command_line_find_installed_package (params) :
@@ -50,13 +43,6 @@ def create_command_line_find_installed_package (params) :
 def create_command_line_install (params) :
   command_line = prepare_pacman_invocation ()
   command_line += [ "-S" ] + params ["package_name"]
-  return command_line
-
-def create_command_line_install_aur (params) :
-  # TODO:
-  # download snashot, unzip, show files to user, makepkg -sri (that's too much)
-  # nicht sicher ob ich  das machen werde / not shua ail du dhis
-  raise Exception ("Entschuldigung, es geht nicht.")
   return command_line
 
 def create_command_line_install_file (params) :
@@ -113,7 +99,25 @@ def create_command_line_uninstall_and_remove_conf (params) :
 def create_command_line_upgrade_system (params) :
   return prepare_pacman_invocation (option = "-Syu")
 
+def create_command_line_list_orphan_dependencies(params):
+  return prepare_pacman_invocation(options = '-Qqtd')
+
 # below are to be improved
+
+def create_command_line_downgrade (params) :
+  # TODO: for each package, list cached versions, get the one preceding the last (how?) then invoke pacman -U
+  raise Exception ("Es wird später implementet")
+  package_names = []
+  command_line = prepare_pacman_invocation ()
+  return command_line
+
+def create_command_line_install_aur (params) :
+  # TODO:
+  # download snashot, unzip, show files to user, makepkg -sri (that's too much)
+  # nicht sicher ob ich  das machen werde / not shua ail du dhis
+  raise Exception ("Entschuldigung, es geht nicht.")
+  return command_line
+
 def create_command_line_check_if_installed (params) :
   # TODO
   return prepare_pacman_invocation (option = "-Q") + params ["package_name"]
@@ -152,7 +156,7 @@ def create_command_line_show_previous_upgrade (params) :
 
 actions = {
   "check-if-installed" : [ "package_name", create_command_line_check_if_installed ],
-  "clean-cache" : [ "nb_versions_to_keep", create_command_line_clean_cache ],
+  "cleanup-cache" : [ "nb_versions_to_keep", create_command_line_cleanup_cache ],
   "downgrade" : [ "package_name", create_command_line_downgrade ],
   "find-installed-package" : [ "package_regexp", create_command_line_find_installed_package ],
   "install" : [ "package_name", create_command_line_install ],
@@ -163,6 +167,7 @@ actions = {
   "list-installed-packages" : [ "", create_command_line_list_installed_packages ],
   "list-installed-package-versions" : [ "", create_command_line_list_installed_package_versions ],
   "list-outofdate-packages" : [ "", create_command_line_list_outofdate_packages ],
+  'list-orphan-dependencies' : [ '', create_command_line_list_orphan_dependencies ],
   "show-info" : [ "package_name", create_command_line_show_info ],
   "show-installed-version" : [ "package_name", create_command_line_show_installed_version ],
   "show-journal-last-lines" : [ "nb_lines", create_command_line_show_journal_last_lines ],
@@ -175,14 +180,23 @@ actions = {
    # to be modified:
   "show-dependencies" : [ "package_name", create_command_line_show_dependencies ],
   "show-what-depends-on" : [ "package_name", create_command_line_show_what_depend_on ],
-
 }
 
 
 alternative_name_dict = {
-  "show-tail-of-log" : "show-journal-last-lines",
+  'aur-install' : 'install-aur',
+  "clear-cache" : "cleanup-cache",
+  "clean-up-cache" : "cleanup-cache",
+  "clean-cache" : "cleanup-cache",
+  'full-remove' : 'uninstall-and-remove-conf',
+  'full-uninstall' : 'uninstall-and-remove-conf',
+  'list-explicit' : 'list-explicitely-installed-packages',
+  'info' : 'show-info',
+  'list-orphans' : 'list-orphan-dependencies',
   "remove" : "uninstall",
-  "clear-cache" : "clear-cache",
+  "show-tail-of-log" : "show-journal-last-lines",
+  "show-version" : "show-installed-version",
+  'upgrade' : 'upgrade-system',
 }
 
 
