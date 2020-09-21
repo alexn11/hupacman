@@ -100,7 +100,7 @@ def create_command_line_upgrade_system (params) :
   return prepare_pacman_invocation (option = "-Syu")
 
 def create_command_line_list_orphan_dependencies(params):
-  return prepare_pacman_invocation(options = '-Qqtd')
+  return prepare_pacman_invocation(option = '-Qqtd')
 
 # below are to be improved
 
@@ -184,23 +184,34 @@ actions = {
 
 
 alternative_name_dict = {
+  'aur' : 'install-aur',
   'aur-install' : 'install-aur',
-  "clear-cache" : "cleanup-cache",
-  "clean-up-cache" : "cleanup-cache",
-  "clean-cache" : "cleanup-cache",
+  'cache' : 'cleanup-cache',
+  'clear-cache' : 'cleanup-cache',
+  'clean-up-cache' : 'cleanup-cache',
+  'clean-cache' : 'cleanup-cache',
+  'explicit' : 'list-explicitely-installed-packages',
+  'find' : 'find-installed-packages',
   'full-remove' : 'uninstall-and-remove-conf',
   'full-uninstall' : 'uninstall-and-remove-conf',
   'list-explicit' : 'list-explicitely-installed-packages',
   'info' : 'show-info',
   'list-orphans' : 'list-orphan-dependencies',
-  "remove" : "uninstall",
-  "show-tail-of-log" : "show-journal-last-lines",
-  "show-version" : "show-installed-version",
+  'log' : 'show-journal-last-lines',
+  'orphans' : 'list-orphan-dependencies',
+  'remove' : 'uninstall',
+  'show-tail-of-log' : 'show-journal-last-lines',
+  'show-version' : 'show-installed-version',
   'upgrade' : 'upgrade-system',
+  'version' : 'show-installed-version',
 }
 
 
 action_options = { k : v [0] for k, v in actions . items () }
+actions_alternative_names = {
+   action : [ alt for alt in alternative_name_dict.keys() if alternative_name_dict[alt] == action ]
+   for action in alternative_name_dict.values()
+}
 
 # funs
 
@@ -220,8 +231,15 @@ def print_help_and_exit ():
     if (parameter_type != ""):
       help_text += " " + parameter_type . upper ()
     print (help_text)
-  help_text = "\n"
-  print (help_text)
+  #help_text = "\n"
+  print ('')
+  print('> Alternative action names:')
+  for action in sorted(actions_alternative_names.keys()):
+    help_text = f'   {action} : '
+    for alt_name in sorted(actions_alternative_names[action]):
+      help_text += f'{alt_name}, '
+    print(help_text[:-2])
+  print('\n')
   sys . exit (2)
   return
 
