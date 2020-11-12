@@ -3,6 +3,7 @@
 # TODO: reintroduce alternative names
 # TODO: proper testing
 # TODO: test: alternative names
+# TODO: add --noconfirm option
 
 # imports
 
@@ -30,7 +31,12 @@ def create_command_line_ (params) :
 
 
 
-def create_command_line_cleanup_cache (params) :
+def create_command_line_download_system_upgrade(params):
+  command_line = prepare_pacman_invocation(option = '-Syuw')
+  return command_line
+
+
+def create_command_line_cleanup_cache(params):
   if (len (params ["nb_versions_to_keep"]) != 1):
     complain_about_more_than_one_package_and_exit ()
   command_line = [ "paccache", "-r", "-k", params ["nb_versions_to_keep"] [0] ]
@@ -38,7 +44,7 @@ def create_command_line_cleanup_cache (params) :
   #command_line = ["paccache", "-ruk0"]
   return command_line
   
-def create_command_line_find_installed_package (params) :
+def create_command_line_find_installed_packages(params):
   #if (len (params ["package_regexp"]) != 1):
   #  complain_about_more_than_one_package_and_exit ()
   command_line = prepare_pacman_invocation () + [ "-Qs" ] + params ["package_regexp"]
@@ -115,14 +121,14 @@ def create_command_line_downgrade (params) :
   command_line = prepare_pacman_invocation ()
   return command_line
 
-def create_command_line_install_aur (params) :
+def create_command_line_install_aur(params):
   # TODO:
   # download snashot, unzip, show files to user, makepkg -sri (that's too much)
   # nicht sicher ob ich  das machen werde / not shua ail du dhis
   raise Exception ("Entschuldigung, es geht nicht.")
   return command_line
 
-def create_command_line_check_if_installed (params) :
+def create_command_line_check_if_installed(params) :
   # TODO
   return prepare_pacman_invocation (option = "-Q") + params ["package_name"]
 
@@ -134,23 +140,23 @@ def create_command_line_show_dependencies (params) :
   command_line = ["pactree", package_names [0]]
   return command_line
 
-def create_command_line_show_what_depend_on (params) :
+def create_command_line_show_what_depend_on(params) :
   # TODO: besser
-  command_line = prepare_pacman_invocation ()
-  command_line += ["-Qi"] + params ["package_name"]
+  command_line = prepare_pacman_invocation()
+  command_line += ["-Qi"] + params["package_name"]
   print ("(note:) The information is somewhere below...")
   return command_line
 
-def create_command_line_show_last_upgrade (params) :
-  # TODO: dhis iz alzou kamplikeitid
+def create_command_line_show_last_upgrade(params):
+  # TODO: this is also complicated
   raise Exception ("Später...")
   command_line = []
   return command_line
 
-def create_command_line_show_previous_upgrade (params) :
+def create_command_line_show_previous_upgrade(params):
   if (len (params ["upgrade_age_rank"]) != 1):
-    complain_about_more_than_one_package_and_exit ()
-  # TODO: dhis iz alzou kamplikeitid
+    complain_about_more_than_one_package_and_exit()
+  # TODO: this is also complicated
   raise Exception ("Später...")
   command_line = []
   return command_line
@@ -161,8 +167,9 @@ def create_command_line_show_previous_upgrade (params) :
 actions = {
   "check-if-installed" : [ "package_name", create_command_line_check_if_installed ],
   "cleanup-cache" : [ "nb_versions_to_keep", create_command_line_cleanup_cache ],
+  "download-system-upgrade" : [ "", create_command_line_download_system_upgrade ],
   "downgrade" : [ "package_name", create_command_line_downgrade ],
-  "find-installed-package" : [ "package_regexp", create_command_line_find_installed_package ],
+  "find-installed-packages" : [ "package_regexp", create_command_line_find_installed_packages ],
   "install" : [ "package_name", create_command_line_install ],
   "install-aur" : [ "package_name", create_command_line_install_aur ],
   "install-file" : [ "file_path", create_command_line_install_file ],
@@ -194,6 +201,7 @@ alternative_name_dict = {
   'clear-cache' : 'cleanup-cache',
   'clean-up-cache' : 'cleanup-cache',
   'clean-cache' : 'cleanup-cache',
+  'download-upgrade' : 'download-system-upgrade',
   'explicit' : 'list-explicitely-installed-packages',
   'find' : 'find-installed-packages',
   'full-remove' : 'uninstall-and-remove-conf',
@@ -274,11 +282,16 @@ def OLD_is_valid_option_then_set_option (option):
     is_valid = False
   return is_valid
 
-def is_valid_option_then_set_option (option):
+def check_if_valid_option(option):
+  """ capture --help option, execute it and exit """
   if ((option == "-h") or (option == "--help")):
-    print_help_and_exit ()
+    print_help_and_exit()
+  if(option == '--noconfirm'):
+    return True
   return False
 
+def set_option(option):
+  return
 
 def does_action_exist (action):
   return (action in action_options)
@@ -286,7 +299,7 @@ def does_action_exist (action):
 def does_action_require_parameter (action):
   return (action_options [action] != "")
 
-def prepare_pacman_invocation (option = None):
+def prepare_pacman_invocation(option = None):
   command_line_head = ["pacman"] + pacman_default_options
   if (do_show_pacman_config):
     command_line_head . append ("-v")
@@ -297,13 +310,13 @@ def prepare_pacman_invocation (option = None):
   return command_line_head
   
 
-def apply_action (action, parameter_list):
-  parameter_type = action_options [action]
+def apply_action(action, parameter_list):
+  parameter_type = action_options[action]
   params = {}
-  params [parameter_type] = parameter_list 
-  command_line = actions [action] [1] (params)
+  params[parameter_type] = parameter_list 
+  command_line = actions[action][1](params)
   # TODO: use check_call ?
-  subprocess . call (command_line)  
+  subprocess.call(command_line)  
   return
 
 
@@ -327,46 +340,48 @@ arg_idx = 1
 is_action_already_determined = False
 action_parameter_list = []
 
-while (arg_idx < argv_len):
+while(arg_idx < argv_len):
   
-  arg = sys . argv [arg_idx]
+  arg = sys.argv[arg_idx]
   
-  if (not is_action_already_determined):
+  if(not is_action_already_determined):
     
-    if (is_option (arg)):
-      if (not is_valid_option_then_set_option (arg)):
-        print (" Unknown option: ", arg)
-        print_help_and_exit ()
-        
+    if(is_option(arg)):
+      if(not check_if_valid_option(arg)):
+        print(" Unknown option: ", arg)
+        print_help_and_exit()
+      
+      action_parameter_list.append(arg)
+      
     else:
       
-      action = convert_alternative_name (arg)
+      action = convert_alternative_name(arg)
       
       
-      if (not does_action_exist (action)):
+      if (not does_action_exist(action)):
         print (" Unknown action: " + action)
         print_help_and_exit ()
         
-      if (does_action_require_parameter (action)):
+      if(does_action_require_parameter(action)):
         if (arg_idx == argv_len - 1):
           print (" Action requires parameters")
-          print_help_and_exit ()
+          print_help_and_exit()
       else:
         if (arg_idx < argv_len - 1):
           print (" Action does not require parameters")
-          print_help_and_exit ()
+          print_help_and_exit()
           
       is_action_already_determined = True
           
   else:
-    action_parameter_list . append (arg)
+    action_parameter_list.append(arg)
     
   arg_idx += 1
 
 
 # check parameter ?
 
-apply_action (action, action_parameter_list)
+apply_action(action, action_parameter_list)
     
 
 
