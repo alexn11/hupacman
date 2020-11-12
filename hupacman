@@ -392,7 +392,8 @@ def apply_action(action, parameter_list, extra_options):
 
 # main
 
-
+# TODO:
+# if(name == '__main__'): 
 
 # default options
 do_show_pacman_config = False
@@ -451,17 +452,3 @@ while(arg_idx < argv_len):
 apply_action(action, action_parameter_list, extra_options)
     
 
-
-"""
-
-actions:
-
-
-options:
---help
--s
---save-root-space
---show-pacman-config
-
-
-"""
