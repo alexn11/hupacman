@@ -150,8 +150,6 @@ def create_command_line_check_if_installed(params, options) :
   return prepare_pacman_invocation() + options + [ '-Q' ] + params['package_name']
 
 
-
-
 def create_command_line_show_last_upgrade(params, options):
   # TODO: this is also complicated
   raise Exception('Später...')
@@ -232,6 +230,7 @@ alternative_name_dict = {
   'full-uninstall' : 'uninstall-and-remove-conf',
   'list-explicit' : 'list-explicitely-installed-packages',
   'info' : 'show-info',
+  'installed' : 'check-if-installed',
   'journal' : 'show-journal',
   'journal-tail' : 'show-journal-last-lines',
   'list-orphans' : 'list-orphan-dependencies',
