@@ -24,140 +24,136 @@ bold_start = '\033[1m'
 bold_end = '\033[0m'
 
 
-def create_command_line_ (params) :
+def create_command_line_(params, options):
   """ dummy """
   command_line = []
   return command_line
 
 
 
-def create_command_line_download_system_upgrade(params):
+def create_command_line_download_system_upgrade(params, options):
   command_line = prepare_pacman_invocation(option = '-Syuw')
-  return command_line
+  return command_line + options
 
 
-def create_command_line_cleanup_cache(params):
-  if (len (params ["nb_versions_to_keep"]) != 1):
-    complain_about_more_than_one_package_and_exit ()
-  command_line = [ "paccache", "-r", "-k", params ["nb_versions_to_keep"] [0] ]
-  #subprocess . check_call (command_line)
-  #command_line = ["paccache", "-ruk0"]
+def create_command_line_cleanup_cache(params, options):
+  if(len (params["nb_versions_to_keep"]) != 1):
+    complain_about_more_than_one_package_and_exit()
+  command_line = [ "paccache", "-r", "-k", params["nb_versions_to_keep"][0] ] + options
   return command_line
   
-def create_command_line_find_installed_packages(params):
-  #if (len (params ["package_regexp"]) != 1):
-  #  complain_about_more_than_one_package_and_exit ()
-  command_line = prepare_pacman_invocation () + [ "-Qs" ] + params ["package_regexp"]
+def create_command_line_find_installed_packages(params, options):
+  command_line = prepare_pacman_invocation() + options + [ "-Qs" ] + params['package_regexp']
   return command_line
   
-def create_command_line_install (params) :
-  command_line = prepare_pacman_invocation ()
-  command_line += [ "-S" ] + params ["package_name"]
+def create_command_line_install(params, options):
+  command_line = prepare_pacman_invocation()
+  command_line += options + [ '-S' ] + params['package_name']
   return command_line
 
-def create_command_line_install_file (params) :
-  command_line = prepare_pacman_invocation ()
-  command_line += [ "-U" ] + params ["file_path"]
+def create_command_line_install_file(params, options):
+  command_line = prepare_pacman_invocation()
+  command_line += options + [ '-U' ] + params['file_path']
   return command_line
   
-def create_command_line_list_cached_versions (params) :
-  package_res = [ package_name + "-[0-9]*" for package_name in params ["package_name"] ]
+def create_command_line_list_cached_versions(params, options):
+  package_res = [ package_name + '-[0-9]*' for package_name in params['package_name'] ]
   command_line = [ "find", pacman_cache_dir, "-name", package_res [0] ]
   for package_re in package_res [ 1 : ] :
     command_line += [ "-or", "-name", package_re ]
   return command_line
 
-def create_command_line_list_explicitely_installed_packages (params) :
-  return prepare_pacman_invocation (option = "-Qte")
+def create_command_line_list_explicitely_installed_packages(params, options):
+  return prepare_pacman_invocation(option = "-Qte") + options
 
-def create_command_line_list_installed_package_versions (params) :
-  return prepare_pacman_invocation (option = "-Q")
+def create_command_line_list_installed_package_versions(params, options):
+  return prepare_pacman_invocation(option = "-Q") + options
 
-def create_command_line_list_installed_packages (params) :
-  return prepare_pacman_invocation (option = "-Qq")
+def create_command_line_list_installed_packages (params, options):
+  return prepare_pacman_invocation(option = "-Qq") + options
   
-def create_command_line_list_outofdate_packages (params) :
-  return prepare_pacman_invocation (option = "-Qu")
+def create_command_line_list_outofdate_packages(params, options):
+  return prepare_pacman_invocation(option = "-Qu") + options
 
-def create_command_line_show_info (params) :
-  return prepare_pacman_invocation (option = "-Qi") + params ["package_name"]
+def create_command_line_show_info(params, options):
+  return prepare_pacman_invocation() + options + [ '-Qi' ] + params['package_name']
 
-def create_command_line_show_installed_version (params) :
-  command_line = prepare_pacman_invocation ()
-  command_line . append ("-Q")
-  command_line += params ["package_name"]
+def create_command_line_show_installed_version(params, options):
+  command_line = prepare_pacman_invocation() + options
+  command_line.append('-Q')
+  command_line += params['package_name']
   return command_line
 
-def create_command_line_show_journal_last_lines (params) :
-  if (len (params ["nb_lines"]) != 1):
-    complain_about_more_than_one_package_and_exit ()
+def create_command_line_show_journal_last_lines(params, options):
+  if(len(params['nb_lines']) != 1):
+    complain_about_more_than_one_package_and_exit()
   return [ "tail", "-n", params ["nb_lines"] [0], pacman_journal_path ]
 
-def create_command_line_show_which_package_provides (params) :
-  command_line = prepare_pacman_invocation ()
-  command_line += [ "-Qo" ] + params ["file_path"]
+def create_command_line_show_which_package_provides(params, options):
+  command_line = prepare_pacman_invocation()
+  command_line += options + [ '-Qo' ] + params['file_path']
   return command_line
 
-def create_command_line_uninstall (params) :
-  command_line = prepare_pacman_invocation () + [ "-R" ] + params ["package_name"]
+def create_command_line_uninstall(params, options):
+  command_line = prepare_pacman_invocation() + options + [ '-R' ] + params['package_name']
   return command_line
 
-def create_command_line_uninstall_and_remove_conf (params) :
-  command_line = prepare_pacman_invocation () + [ "-R", "--nosave" ] + params ["package_name"]
+def create_command_line_uninstall_and_remove_conf(params, options):
+  command_line = prepare_pacman_invocation() + options + [ '-R', '--nosave' ] + params['package_name']
   return command_line
 
-def create_command_line_upgrade_system (params) :
-  return prepare_pacman_invocation (option = "-Syu")
+def create_command_line_upgrade_system (params, options):
+  return prepare_pacman_invocation(option = '-Syu') + options
 
-def create_command_line_list_orphan_dependencies(params):
-  return prepare_pacman_invocation(option = '-Qqtd')
+def create_command_line_list_orphan_dependencies(params, options):
+  return prepare_pacman_invocation(option = '-Qqtd') + options
 
 # below are to be improved
 
-def create_command_line_downgrade (params) :
+def create_command_line_downgrade (params, options):
   # TODO: for each package, list cached versions, get the one preceding the last (how?) then invoke pacman -U
   raise Exception ("Es wird später implementet")
   package_names = []
   command_line = prepare_pacman_invocation ()
   return command_line
 
-def create_command_line_install_aur(params):
+def create_command_line_install_aur(params, options):
   # TODO:
   # download snashot, unzip, show files to user, makepkg -sri (that's too much)
   # nicht sicher ob ich  das machen werde / not shua ail du dhis
   raise Exception ("Entschuldigung, es geht nicht.")
   return command_line
 
-def create_command_line_check_if_installed(params) :
+def create_command_line_check_if_installed(params, options) :
   # TODO
-  return prepare_pacman_invocation (option = "-Q") + params ["package_name"]
+  return prepare_pacman_invocation() + options + [ '-Q' ] + params['package_name']
 
-def create_command_line_show_dependencies (params) :
+def create_command_line_show_dependencies(params, options):
   # TODO: besser
-  package_names = params ["package_name"]
-  if (len (package_names) != 1):
-    complain_about_more_than_one_package_and_exit ()
-  command_line = ["pactree", package_names [0]]
+  package_names = params['package_name']
+  if(len(package_names) != 1):
+    complain_about_more_than_one_package_and_exit()
+  command_line = [ 'pactree' ] + options + [ package_names[0] ]
   return command_line
 
-def create_command_line_show_what_depend_on(params) :
+def create_command_line_show_what_depend_on(params, options):
   # TODO: besser
   command_line = prepare_pacman_invocation()
-  command_line += ["-Qi"] + params["package_name"]
-  print ("(note:) The information is somewhere below...")
+  command_line += options + [ '-Qi' ] + params['package_name']
+  print ('(note:) The information is somewhere below...')
   return command_line
 
-def create_command_line_show_last_upgrade(params):
+def create_command_line_show_last_upgrade(params, options):
   # TODO: this is also complicated
-  raise Exception ("Später...")
+  raise Exception('Später...')
   command_line = []
   return command_line
 
-def create_command_line_show_previous_upgrade(params):
-  if (len (params ["upgrade_age_rank"]) != 1):
+def create_command_line_show_previous_upgrade(params, options):
+  if(len(params['upgrade_age_rank']) != 1):
     complain_about_more_than_one_package_and_exit()
   # TODO: this is also complicated
-  raise Exception ("Später...")
+  raise Exception("Später...")
   command_line = []
   return command_line
 
@@ -227,11 +223,11 @@ actions_alternative_names = {
 
 # funs
 
-def convert_alternative_name (action) :
+def convert_alternative_name(action):
   translated = action
   try :
-    translated = alternative_name_dict [action]
-  except (KeyError) :
+    translated = alternative_name_dict[action]
+  except(KeyError) :
     pass
   return translated
 
@@ -284,11 +280,11 @@ def OLD_is_valid_option_then_set_option (option):
 
 def check_if_valid_option(option):
   """ capture --help option, execute it and exit """
-  if ((option == "-h") or (option == "--help")):
+  if ((option == '-h') or (option == '--help')):
     print_help_and_exit()
-  if(option == '--noconfirm'):
+  if(option in [ '--noconfirm' ]):
     return True
-  return False
+  return True # False yes
 
 def set_option(option):
   return
@@ -310,11 +306,11 @@ def prepare_pacman_invocation(option = None):
   return command_line_head
   
 
-def apply_action(action, parameter_list):
+def apply_action(action, parameter_list, extra_options):
   parameter_type = action_options[action]
   params = {}
   params[parameter_type] = parameter_list 
-  command_line = actions[action][1](params)
+  command_line = actions[action][1](params, extra_options)
   # TODO: use check_call ?
   subprocess.call(command_line)  
   return
@@ -339,6 +335,7 @@ if (argv_len == 1):
 arg_idx = 1
 is_action_already_determined = False
 action_parameter_list = []
+extra_options = []
 
 while(arg_idx < argv_len):
   
@@ -351,24 +348,24 @@ while(arg_idx < argv_len):
         print(" Unknown option: ", arg)
         print_help_and_exit()
       
-      action_parameter_list.append(arg)
+      extra_options.append(arg)
       
     else:
       
       action = convert_alternative_name(arg)
       
       
-      if (not does_action_exist(action)):
+      if(not does_action_exist(action)):
         print (" Unknown action: " + action)
         print_help_and_exit ()
         
       if(does_action_require_parameter(action)):
-        if (arg_idx == argv_len - 1):
-          print (" Action requires parameters")
+        if(arg_idx == argv_len - 1):
+          print(" Action requires parameters")
           print_help_and_exit()
       else:
-        if (arg_idx < argv_len - 1):
-          print (" Action does not require parameters")
+        if(arg_idx < argv_len - 1):
+          print(" Action does not require parameters")
           print_help_and_exit()
           
       is_action_already_determined = True
@@ -381,7 +378,7 @@ while(arg_idx < argv_len):
 
 # check parameter ?
 
-apply_action(action, action_parameter_list)
+apply_action(action, action_parameter_list, extra_options)
     
 
 
