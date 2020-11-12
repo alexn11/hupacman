@@ -6,6 +6,7 @@
 # imports
 
 import os
+import re
 import sys
 import subprocess
 
@@ -23,6 +24,7 @@ bold_start = '\033[1m'
 bold_end = '\033[0m'
 
 
+# just for lazy copy-poste
 def create_command_line_(params, options):
   """ dummy """
   command_line = []
@@ -110,6 +112,23 @@ def create_command_line_upgrade_system (params, options):
 def create_command_line_list_orphan_dependencies(params, options):
   return prepare_pacman_invocation(option = '-Qqtd') + options
 
+def create_command_line_show_dependencies_tree(params, options):
+  package_names = params['package_name']
+  if(len(package_names) != 1):
+    complain_about_more_than_one_package_and_exit()
+  command_line = [ 'pactree' ] + options + [ package_names[0] ]
+  return command_line
+
+def create_command_line_show_dependencies(params, options):
+  command_line = prepare_pacman_invocation()
+  command_line += options + [ '-Qi' ] + params['package_name']
+  return command_line
+
+def create_command_line_show_what_depend_on(params, options):
+  command_line = prepare_pacman_invocation()
+  command_line += options + [ '-Qi' ] + params['package_name']
+  return command_line
+
 # below are to be improved
 
 def create_command_line_downgrade(params, options):
@@ -130,20 +149,8 @@ def create_command_line_check_if_installed(params, options) :
   # TODO
   return prepare_pacman_invocation() + options + [ '-Q' ] + params['package_name']
 
-def create_command_line_show_dependencies(params, options):
-  # TODO: besser
-  package_names = params['package_name']
-  if(len(package_names) != 1):
-    complain_about_more_than_one_package_and_exit()
-  command_line = [ 'pactree' ] + options + [ package_names[0] ]
-  return command_line
 
-def create_command_line_show_what_depend_on(params, options):
-  # TODO: besser
-  command_line = prepare_pacman_invocation()
-  command_line += options + [ '-Qi' ] + params['package_name']
-  print ('(note:) The information is somewhere below...')
-  return command_line
+
 
 def create_command_line_show_last_upgrade(params, options):
   # TODO: this is also complicated
@@ -159,37 +166,52 @@ def create_command_line_show_previous_upgrade(params, options):
   command_line = []
   return command_line
 
+# specific processes
+def process_outputs(action, action_special_params, outputs):
+  if(action == 'check-if-installed'):
+    print(f'{ "installed" if(outputs.returncode == 0) else "not found" }')
+  elif(action == 'show-dependencies'):
+    output_text =  remove_formatting(outputs.stdout.decode())
+    dependencies = ' '.join(re.search('Depends On +:(.*)', output_text).group(1).split())
+    print(dependencies)
+  elif(action == 'show-what-depends-on'):
+    output_text = remove_formatting(outputs.stdout.decode())
+    dependencies = ' '.join(re.search('Required By +:(.*)', output_text).group(1).split())
+    print(dependencies)
+  else:
+    raise Exception(f'unknown action with special processing: {action}')
 
 
 
 actions = {
-  "check-if-installed" : [ "package_name", create_command_line_check_if_installed ],
-  "cleanup-cache" : [ "nb_versions_to_keep", create_command_line_cleanup_cache ],
-  "download-system-upgrade" : [ "", create_command_line_download_system_upgrade ],
-  "downgrade" : [ "package_name", create_command_line_downgrade ],
-  "find-installed-packages" : [ "package_regexp", create_command_line_find_installed_packages ],
-  "install" : [ "package_name", create_command_line_install ],
-  "install-aur" : [ "package_name", create_command_line_install_aur ],
-  "install-file" : [ "file_path", create_command_line_install_file ],
-  "list-cached-versions" : [ "package_name", create_command_line_list_cached_versions ],
-  "list-explicitely-installed-packages" : [ "", create_command_line_list_explicitely_installed_packages ],
-  "list-installed-packages" : [ "", create_command_line_list_installed_packages ],
-  "list-installed-package-versions" : [ "", create_command_line_list_installed_package_versions ],
-  "list-outofdate-packages" : [ "", create_command_line_list_outofdate_packages ],
-  'list-orphan-dependencies' : [ '', create_command_line_list_orphan_dependencies ],
-  "show-info" : [ "package_name", create_command_line_show_info ],
-  "show-installed-version" : [ "package_name", create_command_line_show_installed_version ],
-  "show-journal" : [ "", create_command_line_show_journal ],
-  "show-journal-last-lines" : [ "nb_lines", create_command_line_show_journal_last_lines ],
-  #"show-last-upgrade" : [ "", create_command_line_show_last_upgrade ],  # todo:
-  #"show-previous-upgrade" : [ "upgrade_age_rank", create_command_line_show_previous_upgrade ], # todo:
-  "show-which-package-provides" : [ "file_path", create_command_line_show_which_package_provides ],
-  "uninstall" : [ "package_name", create_command_line_uninstall ],
-  "uninstall-and-remove-conf" : [ "package_name", create_command_line_uninstall_and_remove_conf ],
-  "upgrade-system" : [ "", create_command_line_upgrade_system ],
+  "check-if-installed" : [ "package_name", create_command_line_check_if_installed, True ],
+  "cleanup-cache" : [ "nb_versions_to_keep", create_command_line_cleanup_cache, None ],
+  "download-system-upgrade" : [ "", create_command_line_download_system_upgrade, None ],
+  "downgrade" : [ "package_name", create_command_line_downgrade, None ],
+  "find-installed-packages" : [ "package_regexp", create_command_line_find_installed_packages, None ],
+  "install" : [ "package_name", create_command_line_install, None ],
+  "install-aur" : [ "package_name", create_command_line_install_aur, None ],
+  "install-file" : [ "file_path", create_command_line_install_file, None ],
+  "list-cached-versions" : [ "package_name", create_command_line_list_cached_versions, None ],
+  "list-explicitely-installed-packages" : [ "", create_command_line_list_explicitely_installed_packages, None ],
+  "list-installed-packages" : [ "", create_command_line_list_installed_packages, None ],
+  "list-installed-package-versions" : [ "", create_command_line_list_installed_package_versions, None ],
+  "list-outofdate-packages" : [ "", create_command_line_list_outofdate_packages, None ],
+  'list-orphan-dependencies' : [ '', create_command_line_list_orphan_dependencies, None ],
+  "show-dependencies" : [ "package_name", create_command_line_show_dependencies, True ],
+  "show-dependencies-tree" : [ "package_name", create_command_line_show_dependencies_tree, None ],
+  "show-info" : [ "package_name", create_command_line_show_info, None ],
+  "show-installed-version" : [ "package_name", create_command_line_show_installed_version, None ],
+  "show-journal" : [ "", create_command_line_show_journal, None ],
+  "show-journal-last-lines" : [ "nb_lines", create_command_line_show_journal_last_lines, None ],
+  #"show-last-upgrade" : [ "", create_command_line_show_last_upgrade, None ],  # todo:
+  #"show-previous-upgrade" : [ "upgrade_age_rank", create_command_line_show_previous_upgrade, None ], # todo:
+  "show-what-depends-on" : [ "package_name", create_command_line_show_what_depend_on, True ],
+  "show-which-package-provides" : [ "file_path", create_command_line_show_which_package_provides, None ],
+  "uninstall" : [ "package_name", create_command_line_uninstall, None ],
+  "uninstall-and-remove-conf" : [ "package_name", create_command_line_uninstall_and_remove_conf, None ],
+  "upgrade-system" : [ "", create_command_line_upgrade_system, None ],
    # to be modified:
-  "show-dependencies" : [ "package_name", create_command_line_show_dependencies ],
-  "show-what-depends-on" : [ "package_name", create_command_line_show_what_depend_on ],
 }
 
 
@@ -200,6 +222,9 @@ alternative_name_dict = {
   'clear-cache' : 'cleanup-cache',
   'clean-up-cache' : 'cleanup-cache',
   'clean-cache' : 'cleanup-cache',
+  'dependencies' : 'show-dependencies',
+  'depends' : 'show-dependencies',
+  'depends-on' : 'show-what-depends-on',
   'download-upgrade' : 'download-system-upgrade',
   'explicit' : 'list-explicitely-installed-packages',
   'find' : 'find-installed-packages',
@@ -211,22 +236,30 @@ alternative_name_dict = {
   'journal-tail' : 'show-journal-last-lines',
   'list-orphans' : 'list-orphan-dependencies',
   'log' : 'show-journal',
+  'log-tail' : 'show-journal-last-lines',
   'orphans' : 'list-orphan-dependencies',
+  'required-by' : 'show-what-depends-on',
   'remove' : 'uninstall',
-  'show-tail-of-log' : 'show-journal-last-lines',
-  'show-version' : 'show-installed-version',
+  #'show-tail-of-log' : 'show-journal-last-lines',
+  #'show-version' : 'show-installed-version',
+  'tree' : 'show-dependencies-tree',
   'upgrade' : 'upgrade-system',
   'version' : 'show-installed-version',
 }
 
 
-action_options = { k : v [0] for k, v in actions . items () }
+action_options = { k : v[0] for k, v in actions.items() }
+action_is_simple_invocation = { k : (v[2] is None) for k, v in actions.items() }
+
 actions_alternative_names = {
    action : [ alt for alt in alternative_name_dict.keys() if alternative_name_dict[alt] == action ]
    for action in alternative_name_dict.values()
 }
 
 # funs
+
+def remove_formatting(s):
+  return s.replace(bold_start, '').replace(bold_end, '')
 
 def get_cache_dir(index = 0):
   results = subprocess.run([ 'pacconf', 'CacheDir'], capture_output = True)
@@ -238,7 +271,10 @@ def get_journal_path(index = 0):
   log_files = results.stdout.decode().strip().split('\n')
   return log_files[index]
 
-
+def prepare_env():
+  env = os.environ.copy()
+  env['LC_ALL'] = 'en_US'
+  return env
 
 def convert_alternative_name(action):
   translated = action
@@ -297,42 +333,59 @@ def OLD_is_valid_option_then_set_option(option):
 
 def check_if_valid_option(option):
   """ capture --help option, execute it and exit """
+  """ TODO: Accept anything else as a valid option - DONT """
   if ((option == '-h') or (option == '--help')):
     print_help_and_exit()
   if(option in [ '--noconfirm' ]):
     return True
-  return True # False yes
+  return True # False
 
 def set_option(option):
   return
 
-def does_action_exist (action):
+def does_action_exist(action):
   return (action in action_options)
 
-def does_action_require_parameter (action):
+def does_action_require_parameter(action):
   return (action_options [action] != "")
 
 def prepare_pacman_invocation(option = None):
-  command_line_head = ["pacman"] + pacman_default_options
+  command_line_head = [ 'pacman' ] + pacman_default_options
   if (do_show_pacman_config):
-    command_line_head . append ("-v")
+    command_line_head.append('-v')
   if (do_use_alternate_cache):
-    command_line_head += ["--cachedir", pacman_alternate_cache]
+    command_line_head += [ '--cachedir', pacman_alternate_cache ]
   if (option is not None) :
     command_line_head += [ option ]
   return command_line_head
-  
+
 
 def apply_action(action, parameter_list, extra_options):
+  
+  is_simple_invocation = action_is_simple_invocation[action]
   parameter_type = action_options[action]
   params = {}
-  params[parameter_type] = parameter_list 
+  params[parameter_type] = parameter_list
   command_line = actions[action][1](params, extra_options)
-  # TODO: use check_call ?
-  subprocess.call(command_line)  
-  return
-
-
+  
+  if(not is_simple_invocation):
+    action_special_params = action_options[action][2]
+    do_capture_outputs = True # action_special_params['do_capture_outputs']
+  else:
+    do_capture_outputs = False
+  
+  if(not do_capture_outputs):
+    # keep the default env here
+    subprocess.call(command_line)
+    outputs = None
+  else:
+    env = prepare_env()
+    outputs = subprocess.run(command_line, capture_output = True, env = env)
+  
+  if(is_simple_invocation):
+    return
+  
+  process_outputs(action, action_special_params, outputs)
 
 
 
@@ -345,9 +398,9 @@ def apply_action(action, parameter_list, extra_options):
 do_show_pacman_config = False
 do_use_alternate_cache = False
 
-argv_len = len (sys . argv)
-if (argv_len == 1):
-  print_help_and_exit ()
+argv_len = len(sys.argv)
+if(argv_len == 1):
+  print_help_and_exit()
 
 arg_idx = 1
 is_action_already_determined = False
