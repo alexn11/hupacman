@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
-# TODO: reintroduce alternative names
 # TODO: proper testing
-# TODO: test: alternative names
-# TODO: add --noconfirm option
+# TODO: doesnt handle multiple cache dirs properly
 
 # imports
 
@@ -18,8 +16,7 @@ pacman_default_options = ["--color", "always"]
 
 # TODO: these should be options
 pacman_alternate_cache = '~/pacman-cache'
-pacman_cache_dir = '/var/cache/pacman/pkg'
-pacman_journal_path = '/var/log/pacman.log'
+
 
 
 bold_start = '\033[1m'
@@ -60,7 +57,7 @@ def create_command_line_install_file(params, options):
   
 def create_command_line_list_cached_versions(params, options):
   package_res = [ package_name + '-[0-9]*' for package_name in params['package_name'] ]
-  command_line = [ "find", pacman_cache_dir, "-name", package_res [0] ]
+  command_line = [ "find", get_cache_dir(), "-name", package_res [0] ]
   for package_re in package_res [ 1 : ] :
     command_line += [ "-or", "-name", package_re ]
   return command_line
@@ -87,12 +84,12 @@ def create_command_line_show_installed_version(params, options):
   return command_line
 
 def create_command_line_show_journal(params, options):
-  return [ 'less', pacman_journal_path ]
+  return [ 'less', get_journal_path() ]
 
 def create_command_line_show_journal_last_lines(params, options):
   if(len(params['nb_lines']) != 1):
     complain_about_more_than_one_package_and_exit()
-  return [ 'tail', '-n', params['nb_lines'][0], pacman_journal_path ]
+  return [ 'tail', '-n', params['nb_lines'][0], get_journal_path() ]
 
 def create_command_line_show_which_package_provides(params, options):
   command_line = prepare_pacman_invocation()
@@ -230,6 +227,18 @@ actions_alternative_names = {
 }
 
 # funs
+
+def get_cache_dir(index = 0):
+  results = subprocess.run([ 'pacconf', 'CacheDir'], capture_output = True)
+  cache_dirs = results.stdout.decode().strip().split('\n')
+  return cache_dirs[index]
+
+def get_journal_path(index = 0):
+  results = subprocess.run([ 'pacconf', 'LogFile'], capture_output = True)
+  log_files = results.stdout.decode().strip().split('\n')
+  return log_files[index]
+
+
 
 def convert_alternative_name(action):
   translated = action
