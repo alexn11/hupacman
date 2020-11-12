@@ -15,10 +15,12 @@ import subprocess
 
 pacman_default_options = ["--color", "always"]
 
-pacman_alternate_cache = "/home/ax/pacman-cache"
 
-pacman_cache_dir = "/var/cache/pacman/pkg"
-pacman_journal_path = "/var/log/pacman.log"
+# TODO: these should be options
+pacman_alternate_cache = '~/pacman-cache'
+pacman_cache_dir = '/var/cache/pacman/pkg'
+pacman_journal_path = '/var/log/pacman.log'
+
 
 bold_start = '\033[1m'
 bold_end = '\033[0m'
@@ -84,10 +86,13 @@ def create_command_line_show_installed_version(params, options):
   command_line += params['package_name']
   return command_line
 
+def create_command_line_show_journal(params, options):
+  return [ 'less', pacman_journal_path ]
+
 def create_command_line_show_journal_last_lines(params, options):
   if(len(params['nb_lines']) != 1):
     complain_about_more_than_one_package_and_exit()
-  return [ "tail", "-n", params ["nb_lines"] [0], pacman_journal_path ]
+  return [ 'tail', '-n', params['nb_lines'][0], pacman_journal_path ]
 
 def create_command_line_show_which_package_provides(params, options):
   command_line = prepare_pacman_invocation()
@@ -110,7 +115,7 @@ def create_command_line_list_orphan_dependencies(params, options):
 
 # below are to be improved
 
-def create_command_line_downgrade (params, options):
+def create_command_line_downgrade(params, options):
   # TODO: for each package, list cached versions, get the one preceding the last (how?) then invoke pacman -U
   raise Exception ("Es wird später implementet")
   package_names = []
@@ -177,6 +182,7 @@ actions = {
   'list-orphan-dependencies' : [ '', create_command_line_list_orphan_dependencies ],
   "show-info" : [ "package_name", create_command_line_show_info ],
   "show-installed-version" : [ "package_name", create_command_line_show_installed_version ],
+  "show-journal" : [ "", create_command_line_show_journal ],
   "show-journal-last-lines" : [ "nb_lines", create_command_line_show_journal_last_lines ],
   #"show-last-upgrade" : [ "", create_command_line_show_last_upgrade ],  # todo:
   #"show-previous-upgrade" : [ "upgrade_age_rank", create_command_line_show_previous_upgrade ], # todo:
@@ -204,8 +210,10 @@ alternative_name_dict = {
   'full-uninstall' : 'uninstall-and-remove-conf',
   'list-explicit' : 'list-explicitely-installed-packages',
   'info' : 'show-info',
+  'journal' : 'show-journal',
+  'journal-tail' : 'show-journal-last-lines',
   'list-orphans' : 'list-orphan-dependencies',
-  'log' : 'show-journal-last-lines',
+  'log' : 'show-journal',
   'orphans' : 'list-orphan-dependencies',
   'remove' : 'uninstall',
   'show-tail-of-log' : 'show-journal-last-lines',
@@ -231,16 +239,16 @@ def convert_alternative_name(action):
     pass
   return translated
 
-def print_help_and_exit ():
+def print_help_and_exit():
   print(f'{bold_start}Options: --help (-h){bold_end}')
   print(f'{bold_start}Actions:{bold_end}')
-  for action, parameter_type in sorted (action_options . items ()):
+  for action, parameter_type in sorted(action_options.items()):
     help_text = f' {action} '
     if (parameter_type != ""):
-      help_text += " " + parameter_type . upper ()
-    print (help_text)
+      help_text += " " + parameter_type.upper()
+    print(help_text)
   #help_text = "\n"
-  print ('')
+  print('')
   print(f'  {bold_start}Alternative action names:{bold_end}')
   for action in sorted(actions_alternative_names.keys()):
     help_text = f'     {action} : '
@@ -254,19 +262,19 @@ def print_help_and_exit ():
       help_text += ', '
     print(help_text[:-2])
   print('\n')
-  sys . exit (2)
+  sys.exit(2)
   return
 
 
-def complain_about_more_than_one_package_and_exit ():
-  print (":-( This action requires only one package.")
-  sys . exit (2)
+def complain_about_more_than_one_package_and_exit():
+  print(':-( This action requires only one package.')
+  sys.exit(2)
 
 
-def is_option (arg):
-  return (arg [0] == '-')
+def is_option(arg):
+  return (arg[0] == '-')
 
-def OLD_is_valid_option_then_set_option (option):
+def OLD_is_valid_option_then_set_option(option):
   is_valid = True
   if ((option == "-h") or (option == "--help")):
     print_help_and_exit ()
