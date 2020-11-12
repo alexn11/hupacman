@@ -62,7 +62,7 @@ Actions:
      upgrade-system : upgrade
 ```
 
-Warning: I take absolutely no responsability whatsoever if anything bad (or good, or neutral) happens during or following the use/download/copy/etc. of this script, or because of anything in relation to this script.
+Warning: I take absolutely no responsability at all if anything bad (or good, or neutral) happens during or following the use/download/copy/etc. of this script, or if anything bad (etc.) happens because of anything in relation to this script.
 
 
 
