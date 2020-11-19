@@ -66,7 +66,7 @@ Actions:
 The action names should make it clear what they are supposed to do. You can also use the alternative names for shorter versions.
 
 
-Warning: I take absolutely no responsability at all if anything bad (or good, or neutral) happens during or following the use/download/copy/etc. of this script, or if anything bad (etc.) happens because of anything in relation to this script. But I use it on my own system so I try my best to do something that works properly and as intended.
+Warning: I take absolutely no responsability at all if anything bad (or good, or neutral) happens during or following the use/download/copy/etc. of this script, or if anything bad (etc.) happens because of anything in relation to this script. *I use it on my own system* so I try my best to do something that works properly and as intended.
 
 
 
