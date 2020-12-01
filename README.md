@@ -7,7 +7,7 @@ hupacman install linux
 # upgrade the system
 hupacman upgrade
 # show package version
-hupcman version linux
+hupacman version linux
 # can also use pacman options such as "no confirm" (be careful with that one):
 hupacman --noconfirm download-system-upgrade
 # list all the actions
